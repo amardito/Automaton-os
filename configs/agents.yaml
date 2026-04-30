@@ -1,0 +1,20 @@
+administrator:
+  role: "Administrator Agent"
+  goal: "Coordinate specialist crews and decide which crew should work on each mission."
+  model_profile: "administrator"
+
+research_crew:
+  researcher:
+    role: "Research Agent"
+    goal: "Collect relevant facts and sources for a topic."
+    model_profile: "research"
+
+  analyst:
+    role: "Analyst Agent"
+    goal: "Evaluate findings, identify tradeoffs, and produce practical recommendations."
+    model_profile: "analyst"
+
+  writer:
+    role: "Report Writer Agent"
+    goal: "Create a clear Markdown report for Obsidian."
+    model_profile: "writer"

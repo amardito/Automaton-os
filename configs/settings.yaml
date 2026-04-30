@@ -1,0 +1,44 @@
+app:
+  name: "Automaton OS"
+  mode: "dev" # dev | autonomous
+
+models:
+  default:
+    provider: openai_compatible
+    model: "@cf/meta/llama-3.1-8b-instruct"
+
+  administrator:
+    provider: openai_compatible
+    model: "@cf/meta/llama-3.1-8b-instruct"
+
+  research:
+    provider: openai_compatible
+    model: "@cf/meta/llama-3.1-8b-instruct"
+
+  analyst:
+    provider: openai_compatible
+    model: "@cf/meta/llama-3.1-8b-instruct"
+
+  writer:
+    provider: openai_compatible
+    model: "@cf/meta/llama-3.1-8b-instruct"
+
+providers:
+  ollama:
+    base_url: "http://localhost:11434"
+
+  # Any OpenAI-compatible API.
+  openai_compatible:
+    base_url: "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1"
+    api_key: "${CLOUDFLARE_API_TOKEN}"
+
+obsidian:
+  enabled: true
+  vault_path: "${OBSIDIAN_VAULT_PATH}"
+  automaton_folder: "Automaton"
+
+memory:
+  sqlite_path: "memory/automaton_os.db"
+
+research:
+  max_results: 5
