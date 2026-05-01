@@ -403,11 +403,86 @@ def update_queued_mission_status(
 def refresh_mission_queue_index(limit: int = 50) -> dict:
     queued = list_queued_missions(status=None, limit=limit)
 
+    mission_logs_by_id = {}
+
+    for item in queued["missions"]:
+        result_log_id = item.get("result_log_id")
+
+        if result_log_id:
+            try:
+                log = get_mission_log_by_id(int(result_log_id))
+                if log:
+                    mission_logs_by_id[int(result_log_id)] = log
+            except ValueError:
+                pass
+
     queue_index = update_mission_queue_index(queued["missions"])
-    detail_notes = update_mission_detail_notes(queued["missions"])
+    detail_notes = update_mission_detail_notes(
+        queued["missions"],
+        mission_logs_by_id=mission_logs_by_id,
+    )
 
     return {
         "status": "saved",
         "queue_index": queue_index,
         "mission_detail_notes": detail_notes,
+    }
+
+
+def get_mission_log_by_id(log_id: int) -> dict | None:
+    init_mission_log()
+
+    db_path = get_db_path()
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            id,
+            created_at,
+            mission,
+            status,
+            administrator_decision,
+            crew_name,
+            saved_path,
+            result_summary
+        FROM mission_logs
+        WHERE id = ?
+        LIMIT 1
+        """,
+        (log_id,),
+    )
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if not row:
+        return None
+
+    (
+        mission_log_id,
+        created_at,
+        mission,
+        status,
+        administrator_decision,
+        crew_name,
+        saved_path,
+        result_summary,
+    ) = row
+
+    try:
+        parsed_decision = json.loads(administrator_decision)
+    except json.JSONDecodeError:
+        parsed_decision = administrator_decision
+
+    return {
+        "id": mission_log_id,
+        "created_at": created_at,
+        "mission": mission,
+        "status": status,
+        "administrator_decision": parsed_decision,
+        "crew_name": crew_name,
+        "saved_path": saved_path,
+        "result_summary": result_summary,
     }

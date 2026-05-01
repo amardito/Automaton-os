@@ -11,7 +11,10 @@ from automaton_os.memory.mission_log import (
     list_queued_missions,
     refresh_mission_queue_index,
 )
-from automaton_os.memory.obsidian import update_knowledge_graph_foundation
+from automaton_os.memory.obsidian import (
+    update_knowledge_graph_foundation,
+    refresh_research_index,
+)
 
 
 def check_model(profile: str) -> None:
@@ -177,6 +180,11 @@ def main() -> None:
         help="Create or update Obsidian knowledge graph foundation notes.",
     )
 
+    research_index_parser = subparsers.add_parser(
+        "refresh-research-index",
+        help="Refresh the Obsidian Research Index from saved research reports.",
+    )
+
     args = parser.parse_args()
 
     if args.command == "check-model":
@@ -214,6 +222,10 @@ def main() -> None:
     elif args.command == "refresh-knowledge-graph":
         result = update_knowledge_graph_foundation()
         print("[bold green]Knowledge graph foundation refreshed:[/bold green]")
+        print(result)
+    elif args.command == "refresh-research-index":
+        result = refresh_research_index()
+        print("[bold green]Research Index refreshed:[/bold green]")
         print(result)
 
 
