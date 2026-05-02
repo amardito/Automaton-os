@@ -163,6 +163,17 @@ def main() -> None:
         default=300,
         help="Interval in seconds between queue checks.",
     )
+    queue_scheduler_parser.add_argument(
+        "--max-runs",
+        type=int,
+        default=None,
+        help="Maximum number of queued missions to run before stopping.",
+    )
+    queue_scheduler_parser.add_argument(
+        "--stop-when-empty",
+        action="store_true",
+        help="Stop scheduler when there are no pending queued missions.",
+    )
 
     queue_index_parser = subparsers.add_parser(
         "refresh-queue-index",
@@ -183,6 +194,11 @@ def main() -> None:
     research_index_parser = subparsers.add_parser(
         "refresh-research-index",
         help="Refresh the Obsidian Research Index from saved research reports.",
+    )
+
+    refresh_all_parser = subparsers.add_parser(
+        "refresh-obsidian",
+        help="Refresh all generated Obsidian indexes.",
     )
 
     args = parser.parse_args()
@@ -214,7 +230,11 @@ def main() -> None:
         print("[bold cyan]Mission queue:[/bold cyan]")
         print(result)
     elif args.command == "run-queue-scheduler":
-        run_queue_scheduler(interval_seconds=args.interval)
+        run_queue_scheduler(
+            interval_seconds=args.interval,
+            max_runs=args.max_runs,
+            stop_when_empty=args.stop_when_empty,
+        )
     elif args.command == "refresh-queue-index":
         result = refresh_mission_queue_index(limit=args.limit)
         print("[bold green]Mission queue index refreshed:[/bold green]")
@@ -227,6 +247,19 @@ def main() -> None:
         result = refresh_research_index()
         print("[bold green]Research Index refreshed:[/bold green]")
         print(result)
+    elif args.command == "refresh-obsidian":
+        graph_result = update_knowledge_graph_foundation()
+        research_result = refresh_research_index()
+        queue_result = refresh_mission_queue_index()
+
+        print("[bold green]Obsidian indexes refreshed:[/bold green]")
+        print(
+            {
+                "knowledge_graph": graph_result,
+                "research_index": research_result,
+                "mission_queue": queue_result,
+            }
+        )
 
 
 if __name__ == "__main__":

@@ -141,7 +141,80 @@ def run_next_queued_mission() -> None:
         print(str(error))
 
 
-def run_queue_scheduler(interval_seconds: int = 300) -> None:
+def run_queue_scheduler(
+    interval_seconds: int = 300,
+    max_runs: int | None = None,
+    stop_when_empty: bool = False,
+) -> None:
+    scheduler = BackgroundScheduler()
+
+    state = {
+        "runs_completed": 0,
+        "should_stop": False,
+    }
+
+    def queue_job() -> None:
+        if state["should_stop"]:
+            return
+
+        next_mission = get_next_pending_mission()
+
+        if next_mission["status"] == "empty":
+            print("[bold yellow]No pending queued missions.[/bold yellow]")
+
+            if stop_when_empty:
+                print("[bold yellow]Queue is empty. Scheduler will stop.[/bold yellow]")
+                state["should_stop"] = True
+                scheduler.shutdown(wait=False)
+
+            return
+
+        run_next_queued_mission()
+        state["runs_completed"] += 1
+
+        if max_runs is not None and state["runs_completed"] >= max_runs:
+            print(
+                f"[bold yellow]Max runs reached: {state['runs_completed']}/{max_runs}. "
+                "Scheduler will stop.[/bold yellow]"
+            )
+            state["should_stop"] = True
+            scheduler.shutdown(wait=False)
+
+    scheduler.add_job(
+        queue_job,
+        trigger="interval",
+        seconds=interval_seconds,
+        id="mission_queue_runner",
+        replace_existing=True,
+        max_instances=1,
+        next_run_time=None,
+    )
+
+    print(
+        f"[bold cyan]Scheduled mission queue runner every {interval_seconds} seconds[/bold cyan]"
+    )
+
+    if max_runs is not None:
+        print(f"[bold cyan]Max runs:[/bold cyan] {max_runs}")
+
+    if stop_when_empty:
+        print("[bold cyan]Stop when empty:[/bold cyan] enabled")
+
+    scheduler.start()
+
+    print("\n[bold green]Automaton-OS queue scheduler started.[/bold green]")
+    print("[dim]Press Ctrl+C to stop.[/dim]")
+
+    # Run once immediately instead of waiting for the first interval.
+    queue_job()
+
+    try:
+        while scheduler.running:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\n[bold yellow]Stopping queue scheduler...[/bold yellow]")
+        scheduler.shutdown(wait=False)
+        print("[bold green]Queue scheduler stopped.[/bold green]")
     scheduler = BackgroundScheduler()
 
     scheduler.add_job(

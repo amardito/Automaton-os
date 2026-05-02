@@ -4,24 +4,24 @@ app:
 
 models:
   default:
-    provider: openai_compatible
-    model: "@cf/meta/llama-3.1-8b-instruct"
+    provider: ollama
+    model: "qwen3.5:9b"
 
   administrator:
-    provider: openai_compatible
-    model: "@cf/meta/llama-3.1-8b-instruct"
+    provider: ollama
+    model: "qwen3.5:9b"
 
   research:
-    provider: openai_compatible
-    model: "@cf/meta/llama-3.1-8b-instruct"
+    provider: ollama
+    model: "qwen3.5:9b"
 
   analyst:
-    provider: openai_compatible
-    model: "@cf/meta/llama-3.1-8b-instruct"
+    provider: ollama
+    model: "qwen3.5:9b"
 
   writer:
-    provider: openai_compatible
-    model: "@cf/meta/llama-3.1-8b-instruct"
+    provider: ollama
+    model: "qwen3.5:9b"
 
 providers:
   ollama:

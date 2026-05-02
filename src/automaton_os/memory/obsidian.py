@@ -101,7 +101,10 @@ def update_mission_index(logs: list[dict]) -> dict:
         saved_path = log.get("saved_path") or ""
 
         if saved_path:
-            report_link = f"[Open Report]({saved_path})"
+            report_link = obsidian_wiki_link_from_path(
+                saved_path,
+                alias="Open Report",
+            )
         else:
             report_link = ""
 
@@ -156,7 +159,12 @@ def update_mission_queue_index(queue_items: list[dict]) -> dict:
         mission = str(item.get("mission", "")).replace("|", "\\|")
         result_log_id = item.get("result_log_id") or ""
 
-        mission_link = f"[[Missions/Mission {mission_id}|{mission}]]"
+        short_mission = mission
+
+        if len(short_mission) > 90:
+            short_mission = short_mission[:87] + "..."
+
+        mission_link = f"[[Missions/Mission {mission_id}|{short_mission}]]"
 
         lines.append(
             f"| {mission_id} | {priority} | {status} | {mission_link} | {result_log_id} |"
@@ -612,19 +620,10 @@ v0.1 focuses on:
 
 
 def _obsidian_link_from_path(path_text: str | None) -> str:
-    if not path_text:
-        return ""
-
-    path = Path(path_text)
-
-    # Use filename stem as Obsidian note name.
-    # If the report is inside Research/, link as [[Research/note_name|Open Research Report]]
-    note_name = path.stem
-
-    if "Research" in path.parts:
-        return f"[[Research/{note_name}|Open Research Report]]"
-
-    return f"[[{note_name}|Open Report]]"
+    return obsidian_wiki_link_from_path(
+        path_text,
+        alias="Open Research Report",
+    )
 
 
 def update_mission_detail_notes(
@@ -805,3 +804,24 @@ def refresh_research_index() -> dict:
         "path": str(path),
         "report_count": len(research_files),
     }
+
+
+def obsidian_wiki_link_from_path(
+    path_text: str | None,
+    alias: str = "Open Note",
+) -> str:
+    if not path_text:
+        return ""
+
+    path = Path(path_text)
+    note_name = path.stem
+
+    parts = list(path.parts)
+
+    if "Research" in parts:
+        return f"[[Research/{note_name}|{alias}]]"
+
+    if "Missions" in parts:
+        return f"[[Missions/{note_name}|{alias}]]"
+
+    return f"[[{note_name}|{alias}]]"
